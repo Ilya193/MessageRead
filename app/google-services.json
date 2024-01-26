@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "603391045231",
+    "project_id": "messageread-fc307",
+    "storage_bucket": "messageread-fc307.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:603391045231:android:2064750a0346824f5c279a",
+        "android_client_info": {
+          "package_name": "ru.kraz.messageread"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAQQSWCPJbiOVpbizazRMwBA43Xote6TEo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
