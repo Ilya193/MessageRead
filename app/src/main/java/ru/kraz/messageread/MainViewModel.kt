@@ -34,15 +34,7 @@ class MainViewModel(
 
     fun readMessage(position: Int) = viewModelScope.launch(Dispatchers.IO) {
         val message = messages[position].copy(messageRead = true)
-        db.reference.child("messages/${message.id}").setValue(
-            MessageCloud(
-                message.id,
-                message.message,
-                message.senderId,
-                message.createdDateMap,
-                message.messageRead
-            )
-        )
+        db.reference.child("messages/${message.id}").setValue(message.map())
     }
 
     fun sendMessage(text: String) = viewModelScope.launch(Dispatchers.IO) {
@@ -51,7 +43,7 @@ class MainViewModel(
     }
 
     fun fetchMessages() = viewModelScope.launch(Dispatchers.IO) {
-        db.reference.child("messages").orderByChild("createdDate")
+        db.reference.child("messages").orderByChild("timestamp")
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     messages.clear()
@@ -59,28 +51,8 @@ class MainViewModel(
                         val message = i.getValue(MessageCloud::class.java)
                         val date = Date(message!!.createdDate["timestamp"] as Long)
                         val formattedDate = sdf.format(date)
-                        if (message.senderId == uuid) messages.add(
-                            MessageUi(
-                                message.id,
-                                message.message,
-                                message.senderId,
-                                formattedDate,
-                                message.createdDate,
-                                true,
-                                message.messageRead
-                            )
-                        )
-                        else messages.add(
-                            MessageUi(
-                                message.id,
-                                message.message,
-                                message.senderId,
-                                formattedDate,
-                                message.createdDate,
-                                false,
-                                message.messageRead
-                            )
-                        )
+                        if (message.senderId == uuid) messages.add(message.map(formattedDate, true))
+                        else messages.add(message.map(formattedDate, false))
                     }
                     _uiState.postValue(messages.toList())
                 }
@@ -96,7 +68,18 @@ data class MessageCloud(
     val senderId: String = "",
     val createdDate: Map<String, Any> = mapOf("timestamp" to ServerValue.TIMESTAMP),
     val messageRead: Boolean = false,
-)
+) {
+    fun map(formattedDate: String, iSendThis: Boolean): MessageUi =
+        MessageUi(
+            id,
+            message,
+            senderId,
+            formattedDate,
+            createdDate,
+            iSendThis,
+            messageRead
+        )
+}
 
 data class MessageUi(
     val id: String,
@@ -106,4 +89,12 @@ data class MessageUi(
     val createdDateMap: Map<String, Any>,
     val iSendThis: Boolean = false,
     val messageRead: Boolean = false,
-)
+) {
+    fun map(): MessageCloud = MessageCloud(
+        id,
+        message,
+        senderId,
+        createdDateMap,
+        messageRead
+    )
+}
