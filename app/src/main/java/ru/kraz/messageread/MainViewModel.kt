@@ -8,6 +8,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.Exclude
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ServerValue
 import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -38,7 +39,7 @@ class MainViewModel(
     }
 
     fun fetchMessages() = viewModelScope.launch(Dispatchers.IO) {
-        db.reference.child("messages").addValueEventListener(object : ValueEventListener {
+        db.reference.child("messages").orderByChild("createdDate").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 messages.clear()
                 for (i in snapshot.children) {
@@ -58,6 +59,7 @@ data class MessageCloud(
     val id: String = "",
     val message: String = "",
     val senderId: String = "",
+    val createdDate: Map<String, Any> = mapOf("timestamp" to ServerValue.TIMESTAMP),
     @get:Exclude val iSendThis: Boolean = false,
     val messageRead: Boolean = false
 )
