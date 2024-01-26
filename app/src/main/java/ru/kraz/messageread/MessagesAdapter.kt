@@ -11,27 +11,29 @@ import ru.kraz.messageread.databinding.ItemMessageSenderBinding
 
 class MessagesAdapter(
     private val read: (Int) -> Unit
-) : ListAdapter<MessageCloud, MessagesAdapter.ViewHolder>(Diff()) {
+) : ListAdapter<MessageUi, MessagesAdapter.ViewHolder>(Diff()) {
 
     abstract class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        abstract fun bind(item: MessageCloud)
-        open fun bindRead(item: MessageCloud) {}
+        abstract fun bind(item: MessageUi)
+        open fun bindRead(item: MessageUi) {}
     }
 
     class SenderViewHolder(private val view: ItemMessageSenderBinding) : ViewHolder(view.root) {
-        override fun bind(item: MessageCloud) {
+        override fun bind(item: MessageUi) {
             view.tvMessage.text = item.message
+            view.tvCreatedDate.text = item.createdDate
             bindRead(item)
         }
 
-        override fun bindRead(item: MessageCloud) {
+        override fun bindRead(item: MessageUi) {
             view.stateMessage.setImageResource(if (item.messageRead) R.drawable.done_all else R.drawable.done)
         }
     }
 
     class ReceivingViewHolder(private val view: ItemMessageReceivingBinding) : ViewHolder(view.root) {
-        override fun bind(item: MessageCloud) {
+        override fun bind(item: MessageUi) {
             view.tvMessage.text = item.message
+            view.tvCreatedDate.text = item.createdDate
         }
     }
 
@@ -69,14 +71,14 @@ class MessagesAdapter(
     }
 }
 
-class Diff : DiffUtil.ItemCallback<MessageCloud>() {
-    override fun areItemsTheSame(oldItem: MessageCloud, newItem: MessageCloud): Boolean =
+class Diff : DiffUtil.ItemCallback<MessageUi>() {
+    override fun areItemsTheSame(oldItem: MessageUi, newItem: MessageUi): Boolean =
         oldItem.id == newItem.id
 
-    override fun areContentsTheSame(oldItem: MessageCloud, newItem: MessageCloud): Boolean =
+    override fun areContentsTheSame(oldItem: MessageUi, newItem: MessageUi): Boolean =
         oldItem == newItem
 
-    override fun getChangePayload(oldItem: MessageCloud, newItem: MessageCloud): Any? =
+    override fun getChangePayload(oldItem: MessageUi, newItem: MessageUi): Any? =
         oldItem.messageRead != newItem.messageRead
 
 }

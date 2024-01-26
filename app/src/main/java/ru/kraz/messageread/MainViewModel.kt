@@ -6,23 +6,27 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.Exclude
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ServerValue
 import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class MainViewModel(
-    private val db: FirebaseDatabase
+    private val db: FirebaseDatabase,
 ) : ViewModel() {
 
-    private val messages = mutableListOf<MessageCloud>()
+    private val messages = mutableListOf<MessageUi>()
 
-    private val _uiState = MutableLiveData<List<MessageCloud>>()
-    val uiState: LiveData<List<MessageCloud>> get() = _uiState
+    private val _uiState = MutableLiveData<List<MessageUi>>()
+    val uiState: LiveData<List<MessageUi>> get() = _uiState
 
     private var uuid = ""
+
+    private val sdf = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
 
     fun init(uuid: String) {
         this.uuid = uuid
@@ -30,7 +34,15 @@ class MainViewModel(
 
     fun readMessage(position: Int) = viewModelScope.launch(Dispatchers.IO) {
         val message = messages[position].copy(messageRead = true)
-        db.reference.child("messages/${message.id}").setValue(message)
+        db.reference.child("messages/${message.id}").setValue(
+            MessageCloud(
+                message.id,
+                message.message,
+                message.senderId,
+                message.createdDateMap,
+                message.messageRead
+            )
+        )
     }
 
     fun sendMessage(text: String) = viewModelScope.launch(Dispatchers.IO) {
@@ -39,19 +51,42 @@ class MainViewModel(
     }
 
     fun fetchMessages() = viewModelScope.launch(Dispatchers.IO) {
-        db.reference.child("messages").orderByChild("createdDate").addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                messages.clear()
-                for (i in snapshot.children) {
-                    val messageCloud = i.getValue(MessageCloud::class.java)
-                    if (messageCloud!!.senderId == uuid) messages.add(messageCloud.copy(iSendThis = true))
-                    else messages.add(messageCloud)
+        db.reference.child("messages").orderByChild("createdDate")
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    messages.clear()
+                    for (i in snapshot.children) {
+                        val message = i.getValue(MessageCloud::class.java)
+                        val date = Date(message!!.createdDate["timestamp"] as Long)
+                        val formattedDate = sdf.format(date)
+                        if (message.senderId == uuid) messages.add(
+                            MessageUi(
+                                message.id,
+                                message.message,
+                                message.senderId,
+                                formattedDate,
+                                message.createdDate,
+                                true,
+                                message.messageRead
+                            )
+                        )
+                        else messages.add(
+                            MessageUi(
+                                message.id,
+                                message.message,
+                                message.senderId,
+                                formattedDate,
+                                message.createdDate,
+                                false,
+                                message.messageRead
+                            )
+                        )
+                    }
+                    _uiState.postValue(messages.toList())
                 }
-                _uiState.postValue(messages.toList())
-            }
 
-            override fun onCancelled(error: DatabaseError) {}
-        })
+                override fun onCancelled(error: DatabaseError) {}
+            })
     }
 }
 
@@ -60,7 +95,15 @@ data class MessageCloud(
     val message: String = "",
     val senderId: String = "",
     val createdDate: Map<String, Any> = mapOf("timestamp" to ServerValue.TIMESTAMP),
-    @get:Exclude val iSendThis: Boolean = false,
-    val messageRead: Boolean = false
+    val messageRead: Boolean = false,
 )
 
+data class MessageUi(
+    val id: String,
+    val message: String,
+    val senderId: String,
+    val createdDate: String,
+    val createdDateMap: Map<String, Any>,
+    val iSendThis: Boolean = false,
+    val messageRead: Boolean = false,
+)
