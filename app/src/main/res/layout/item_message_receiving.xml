@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         app:cardCornerRadius="12dp"
         android:backgroundTint="@color/backgroundMessage"
-        app:layout_constraintWidth_percent="0.5"
+        app:layout_constraintWidth_percent="0.55"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 

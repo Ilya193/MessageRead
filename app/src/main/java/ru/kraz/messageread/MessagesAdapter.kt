@@ -53,7 +53,7 @@ class MessagesAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        if (!getItem(position).iSendThis) read(position)
+        if (!getItem(position).iSendThis && !getItem(position).messageRead) read(position)
         holder.bind(getItem(position))
     }
 
