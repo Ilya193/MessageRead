@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import ru.kraz.messageread.databinding.ItemMessageReceivingBinding
 import ru.kraz.messageread.databinding.ItemMessageSenderBinding
+import java.lang.Exception
 
 class MessagesAdapter(
     private val read: (Int) -> Unit
@@ -63,6 +64,10 @@ class MessagesAdapter(
             val action = payloads[0] as Boolean
             if (action) holder.bindRead(getItem(position))
         }
+    }
+
+    fun getSenderId(position: Int): String? {
+        return if (position in 0 until currentList.size) getItem(position).senderId else null
     }
     
     companion object {

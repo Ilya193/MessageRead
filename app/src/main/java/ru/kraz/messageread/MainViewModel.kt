@@ -32,6 +32,10 @@ class MainViewModel(
         this.uuid = uuid
     }
 
+    fun deleteMessage(position: Int) {
+        db.reference.child("messages/${messages[position].id}").removeValue()
+    }
+
     fun readMessage(position: Int) = viewModelScope.launch(Dispatchers.IO) {
         val message = messages[position].copy(messageRead = true)
         db.reference.child("messages/${message.id}").setValue(message.map())
