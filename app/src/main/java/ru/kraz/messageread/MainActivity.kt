@@ -47,7 +47,8 @@ class MainActivity : AppCompatActivity() {
 
         viewModel.uiState.observe(this) {
             adapter.submitList(it)
-            binding.rvMessages.smoothScrollToPosition(it.size - 1)
+            if (it.isNotEmpty())
+                binding.rvMessages.smoothScrollToPosition(it.size - 1)
         }
 
         viewModel.fetchMessages()
